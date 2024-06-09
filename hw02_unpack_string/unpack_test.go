@@ -1,9 +1,12 @@
-package hw02unpackstring
+package main
 
 import (
 	"errors"
 	"testing"
 
+	// Линтер не видит require в списке доступных
+	// import 'github.com/stretchr/testify/require' is not allowed from list 'Main' (depguard)
+	//nolint:depguard
 	"github.com/stretchr/testify/require"
 )
 

@@ -1,4 +1,4 @@
-package hw02unpackstring
+package main
 
 import (
 	"errors"
@@ -7,8 +7,10 @@ import (
 	"unicode"
 )
 
-var ErrInvalidString = errors.New("invalid string")
-var ErrDigitParsing = errors.New("digit parsing error")
+var (
+	ErrInvalidString = errors.New("invalid string")
+	ErrDigitParsing  = errors.New("digit parsing error")
+)
 
 // Решение ДЗ №2 «Распаковка строки»
 //
