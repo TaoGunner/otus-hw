@@ -36,7 +36,7 @@ func Unpack(in string) (string, error) {
 			sb.WriteString(strings.Repeat(string(runes[i]), repeatCount))
 
 			// Инкрементируем счетчик, потому что цифра за проверяемым символом нам уже не нужна
-			i += 1
+			i++
 
 			continue
 		}
