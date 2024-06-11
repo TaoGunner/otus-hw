@@ -3,28 +3,22 @@ package hw03frequencyanalysis
 import (
 	"regexp"
 	"sort"
-	"strings"
 
 	"golang.org/x/exp/maps"
 )
 
-// Регулярное выражение собирающее слова любой длинны, начинающиеся на букву (в середине слова также допускается тире).
-var regexpCyrillicWords = regexp.MustCompile("([а-я][а-я-]*)")
+// Регулярное выражение собирающее слова, состоящие из видимых символов.
+var regexpSimpleWords = regexp.MustCompile(`(\S+)`)
 
 // Решение ДЗ №3 «Частотный анализ»
 //
 //	Необходимо написать Go функцию, принимающую на вход строку с текстом и
 //	возвращающую слайс с 10-ю наиболее часто встречаемыми в тексте словами.
 //	Если слова имеют одинаковую частоту, то должны быть отсортированы лексикографически.
-//
-//	* Дополнительное задание: не учитывать регистр букв и знаки препинания по краям слова
 func Top10(in string) []string {
-	// Перевод входящей строки в нижний регистр
-	in = strings.ToLower(in)
-
 	// Подсчёт и заполнение карты map[<уникальное слово>]<кол-во вхождений>
 	wordsSet := map[string]int{}
-	for _, word := range regexpCyrillicWords.FindAllString(in, -1) {
+	for _, word := range regexpSimpleWords.FindAllString(in, -1) {
 		wordsSet[word]++
 	}
 
@@ -58,5 +52,5 @@ func Top10(in string) []string {
 		}
 	}
 
-	return nil
+	return result
 }
