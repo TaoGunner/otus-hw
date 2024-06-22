@@ -38,7 +38,7 @@ func (l *list) Back() *ListItem {
 	return l.back
 }
 
-// PushFront добавляет значение в начало
+// PushFront добавляет значение в начало.
 func (l *list) PushFront(v interface{}) *ListItem {
 	item := &ListItem{
 		Value: v,
@@ -73,7 +73,7 @@ func (l *list) PushBack(v interface{}) *ListItem {
 	return item
 }
 
-// Remove удаляет существующий элемент из списка
+// Remove удаляет существующий элемент из списка.
 func (l *list) Remove(i *ListItem) {
 	switch {
 	case l.Len() == 1: // Удаление единственного элемента списка
