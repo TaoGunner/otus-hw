@@ -48,4 +48,27 @@ func TestList(t *testing.T) {
 		}
 		require.Equal(t, []int{70, 80, 60, 40, 10, 30, 50}, elems)
 	})
+
+	t.Run("first largest", func(t *testing.T) {
+		l := NewList()
+
+		l.PushFront(3)
+		l.PushBack(4)
+		l.PushFront(8)
+		l.PushBack(12)
+		l.PushFront(5)
+		l.PushBack(90)
+		l.PushFront(82)
+		l.PushBack(3)
+		l.PushFront(2)
+		require.Equal(t, 9, l.Len())
+
+		for i := l.Front().Next; i != nil && i.Next != nil; i = i.Next {
+			if i.Value.(int) > l.Front().Value.(int) {
+				l.MoveToFront(i)
+			}
+		}
+
+		require.Equal(t, l.Front().Value.(int), 90)
+	})
 }
