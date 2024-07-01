@@ -67,4 +67,50 @@ func TestRun(t *testing.T) {
 		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
 		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
 	})
+
+	t.Run("all tasks returns error", func(t *testing.T) {
+		tasksCount := 100
+		tasks := make([]Task, 0, tasksCount)
+
+		var runTasksCount int32
+
+		for i := 0; i < tasksCount; i++ {
+			tasks = append(tasks, func() error {
+				atomic.AddInt32(&runTasksCount, 1)
+				return errors.New("common error")
+			})
+		}
+
+		workersCount := 4
+		maxErrorsCount := 10
+
+		err := Run(tasks, workersCount, maxErrorsCount)
+
+		// вернулась ошибка типа ErrErrorsLimitExceeded.
+		require.ErrorIs(t, err, ErrErrorsLimitExceeded)
+		// все задания завершились ошибкой.
+		require.Equal(t, runTasksCount, int32(maxErrorsCount), "not all tasks has error")
+	})
+
+	t.Run("invalid goroutines count error check", func(t *testing.T) {
+		tasksCount := 10
+		tasks := make([]Task, 0, tasksCount)
+
+		var runTasksCount int32
+
+		for i := 0; i < tasksCount; i++ {
+			tasks = append(tasks, func() error {
+				atomic.AddInt32(&runTasksCount, 1)
+				return nil
+			})
+		}
+		maxErrorsCount := 2
+
+		err := Run(tasks, 0, maxErrorsCount)
+
+		// вернулась ошибка типа ErrInvalidGoroutinesCount.
+		require.ErrorIs(t, err, ErrInvalidGoroutinesCount)
+		// задания не должны быть запущены.
+		require.Equal(t, runTasksCount, int32(0), "one or more task was running")
+	})
 }
