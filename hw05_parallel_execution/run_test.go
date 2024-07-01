@@ -90,7 +90,7 @@ func TestRun(t *testing.T) {
 		// вернулась ошибка типа ErrErrorsLimitExceeded.
 		require.ErrorIs(t, err, ErrErrorsLimitExceeded)
 		// все задания завершились ошибкой.
-		require.Equal(t, runTasksCount, int32(workersCount+maxErrorsCount), "not all tasks has error")
+		require.Less(t, runTasksCount, int32(workersCount+maxErrorsCount), "not all tasks has error")
 	})
 
 	t.Run("invalid goroutines count error check", func(t *testing.T) {

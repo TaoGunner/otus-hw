@@ -25,44 +25,48 @@ func Run(tasks []Task, n, m int) error {
 	}
 
 	wg := sync.WaitGroup{}
-	chTask := make(chan Task)
-	errCount := int64(0)
+	errCount := atomic.Int64{}
 
-	// Запустим требуемое количество горутин
+	// Создаём и наполняем пул рабочими
+	workerPool := make(chan struct{}, n)
 	for range n {
-		wg.Add(1)
+		workerPool <- struct{}{}
+	}
 
+	for _, task := range tasks {
+		// Ждём свободного рабочего
+		<-workerPool
+
+		// Если кол-во ошибок превышает m - прекращаем работу
+		if errCount.Load() >= int64(m) {
+			break
+		}
+
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
 
-			for {
-				// Работаем, пока канал не закрыт
-				task, ok := <-chTask
-				if !ok {
-					break
-				}
-				// Если задача завершилась ошибкой - инкрементируем счетчик ошибок
-				if err := task(); err != nil {
-					atomic.AddInt64(&errCount, 1)
-				}
+			// Выполняем задание, если ошибка - инкрементируем счетчик
+			if err := task(); err != nil {
+				errCount.Add(1)
 			}
+
+			// Возвращаем освободившегося рабочего в пул
+			workerPool <- struct{}{}
 		}()
 	}
-
-	// Пока счетчик ошибок не переполнился - добавляем задачи
-	for _, task := range tasks {
-		if errCount >= int64(m) {
-			break
-		}
-		chTask <- task
-	}
-	close(chTask)
 
 	// Ждём завершения горутин
 	wg.Wait()
 
+	// Очищаем и закрываем канал
+	for len(workerPool) > 0 {
+		<-workerPool
+	}
+	close(workerPool)
+
 	// Если счетчик ошибок дошел до m - возвращаем ошибку
-	if errCount >= int64(m) {
+	if errCount.Load() >= int64(m) {
 		return ErrErrorsLimitExceeded
 	}
 
