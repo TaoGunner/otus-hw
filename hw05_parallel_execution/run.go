@@ -2,7 +2,6 @@ package hw05parallelexecution
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 	"sync/atomic"
 )
@@ -26,7 +25,7 @@ func Run(tasks []Task, n, m int) error {
 	}
 
 	wg := sync.WaitGroup{}
-	chTask := make(chan Task, len(tasks))
+	chTask := make(chan Task)
 	errCount := int64(0)
 
 	// Запустим требуемое количество горутин
@@ -36,14 +35,12 @@ func Run(tasks []Task, n, m int) error {
 		go func() {
 			defer wg.Done()
 
-			// Работаем, пока есть задачи
-			for task := range chTask {
-				fmt.Println(atomic.LoadInt64(&errCount))
-				// Если общий счетчик ошибок дошел до m - прекращаем обработку задач
-				if errCount := atomic.LoadInt64(&errCount); errCount >= int64(m) {
+			for {
+				// Работаем, пока канал не закрыт
+				task, ok := <-chTask
+				if !ok {
 					break
 				}
-
 				// Если задача завершилась ошибкой - инкрементируем счетчик ошибок
 				if err := task(); err != nil {
 					atomic.AddInt64(&errCount, 1)
@@ -52,8 +49,11 @@ func Run(tasks []Task, n, m int) error {
 		}()
 	}
 
-	// Заполняем канал задачами и закрываем его
+	// Пока счетчик ошибок не переполнился - добавляем задачи
 	for _, task := range tasks {
+		if errCount >= int64(m) {
+			break
+		}
 		chTask <- task
 	}
 	close(chTask)

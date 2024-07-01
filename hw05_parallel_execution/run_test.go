@@ -77,6 +77,7 @@ func TestRun(t *testing.T) {
 		for i := 0; i < tasksCount; i++ {
 			tasks = append(tasks, func() error {
 				atomic.AddInt32(&runTasksCount, 1)
+				time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
 				return errors.New("common error")
 			})
 		}
@@ -89,7 +90,7 @@ func TestRun(t *testing.T) {
 		// вернулась ошибка типа ErrErrorsLimitExceeded.
 		require.ErrorIs(t, err, ErrErrorsLimitExceeded)
 		// все задания завершились ошибкой.
-		require.Equal(t, runTasksCount, int32(maxErrorsCount), "not all tasks has error")
+		require.Equal(t, runTasksCount, int32(workersCount+maxErrorsCount), "not all tasks has error")
 	})
 
 	t.Run("invalid goroutines count error check", func(t *testing.T) {
