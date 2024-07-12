@@ -22,7 +22,13 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 		chData := make(Bi)
 
 		go func(chData Bi, chOut Out) {
-			defer close(chData)
+			defer func() {
+				close(chData)
+				//nolint:revive
+				for range chOut {
+					// Исправление утечки горутин
+				}
+			}()
 
 			for {
 				select {
