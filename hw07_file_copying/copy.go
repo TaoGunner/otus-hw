@@ -40,7 +40,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	}
 
 	// Создаём будущий файл-копию
-	dstFile, err := os.OpenFile(toPath, os.O_CREATE|os.O_WRONLY, 0o644)
+	dstFile, err := os.OpenFile(toPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err != nil {
 		fmt.Println(1)
 		return err
