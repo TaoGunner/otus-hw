@@ -14,15 +14,9 @@ const copyBatchSize int64 = 64
 var (
 	ErrUnsupportedFile       = errors.New("unsupported file")
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
-	ErrEqualPath             = errors.New("source and destination path are equal")
 )
 
 func Copy(fromPath, toPath string, offset, limit int64) error {
-	// Пути файлов не должны быть одинаковыми
-	if fromPath == toPath {
-		return ErrEqualPath
-	}
-
 	// Исходный файл должен существовать
 	srcFileInfo, err := os.Stat(fromPath)
 	if err != nil {

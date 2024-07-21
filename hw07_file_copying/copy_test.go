@@ -97,11 +97,6 @@ func TestCopy(t *testing.T) {
 		require.EqualError(t, err, ErrUnsupportedFile.Error())
 	})
 
-	t.Run("source and destination files are equal", func(t *testing.T) {
-		err := Copy("result.txt", "result.txt", 0, 0)
-		require.EqualError(t, err, ErrEqualPath.Error())
-	})
-
 	t.Run("source file not exists", func(t *testing.T) {
 		err := Copy("non_existent_file.txt", "result.txt", 0, 0)
 		require.Error(t, err)
