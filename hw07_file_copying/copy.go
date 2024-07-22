@@ -71,6 +71,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	}
 
 	copiedSize := int64(0)
+	percent := 0
 	for copiedSize < totalSize {
 		// Вычисление размера батча для копирования (по-умолчанию: <copyBatchSize> байт)
 		batchSize := copyBatchSize
@@ -86,8 +87,11 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 		copiedSize += n
 
-		// Рисуем шкалу прогресса
-		drawProgressBar(copiedSize, totalSize)
+		// Рисуем шкалу прогресса, если она изменилась хотя бы на 1%
+		if int(copiedSize*100/totalSize) != percent {
+			percent = int(copiedSize * 100 / totalSize)
+			fmt.Printf("\r[%-100s] %d%%", strings.Repeat("#", percent), percent)
+		}
 	}
 
 	// Если источник и приемник одинаковы
@@ -103,13 +107,4 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	}
 
 	return nil
-}
-
-// drawProgressBar отображает шкалу прогресса копирования в консоли.
-func drawProgressBar(copiedSize, totalSize int64) {
-	percent := copiedSize * 100 / totalSize
-	fmt.Printf("\r[%-100s] %10d/%-10d %d%%", strings.Repeat("#", int(percent)), copiedSize, totalSize, percent)
-	if copiedSize == totalSize {
-		fmt.Print(" FINISHED\n")
-	}
 }
