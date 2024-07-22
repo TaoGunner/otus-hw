@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -31,6 +32,16 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	// Offset больше, чем размер файла - невалидная ситуация
 	if offset > srcFileInfo.Size() {
 		return ErrOffsetExceedsFileSize
+	}
+
+	// Сравним пути источника и приемника
+	isEqual, err := filepath.Match(fromPath, toPath)
+	if err != nil {
+		return err
+	}
+	// Если равны - добавим к приемнику приставку '.tmp'
+	if isEqual {
+		toPath += ".tmp"
 	}
 
 	// Создаём будущий файл-копию
@@ -77,6 +88,18 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 		// Рисуем шкалу прогресса
 		drawProgressBar(copiedSize, totalSize)
+	}
+
+	// Если источник и приемник одинаковы
+	if isEqual {
+		// Удалим источник
+		if err := os.Remove(fromPath); err != nil {
+			return err
+		}
+		// Переименуем приемник
+		if err := os.Rename(toPath, fromPath); err != nil {
+			return err
+		}
 	}
 
 	return nil
