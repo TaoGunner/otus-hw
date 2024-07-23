@@ -96,6 +96,12 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	// Если источник и приемник одинаковы
 	if isEqual {
+		if err := srcFile.Close(); err != nil {
+			return err
+		}
+		if err := dstFile.Close(); err != nil {
+			return err
+		}
 		// Удалим источник
 		if err := os.Remove(fromPath); err != nil {
 			return err
