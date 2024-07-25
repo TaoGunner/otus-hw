@@ -1,15 +1,15 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 // RunCmd runs a command + arguments (cmd) with environment variables from env.
 func RunCmd(cmd []string, env Environment) (returnCode int) {
-	execCmd := exec.Command(cmd[0], cmd[1:]...)
+	execCmd := exec.Command(cmd[0], cmd[1:]...) //nolint:gosec
 	execCmd.Env = os.Environ()
 	// Стандартные потоки ввода/вывода/ошибок пробрасываем в вызываемую программу
 	execCmd.Stdin = os.Stdin
@@ -23,27 +23,11 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 
 	if err := execCmd.Run(); err != nil {
 		// Код выхода утилиты приравниваем с кодом выхода программы
-		if exitError, ok := err.(*exec.ExitError); ok {
+		var exitError *exec.ExitError
+		if errors.As(err, &exitError) {
 			returnCode = exitError.ExitCode()
 		}
 	}
 
 	return
-}
-
-func modifyEnv(envSet Environment) []string {
-	result := []string{}
-
-	for _, osEnv := range os.Environ() {
-		osEnvName := strings.SplitN(osEnv, "=", 2)[0]
-		if env, ok := envSet[osEnvName]; ok {
-			if !env.NeedRemove {
-				result = append(result, fmt.Sprintf("%s=%s", osEnvName, env.Value))
-			}
-		} else {
-			result = append(result, osEnv)
-		}
-	}
-
-	return result
 }
