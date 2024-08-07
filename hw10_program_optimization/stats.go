@@ -1,21 +1,25 @@
 package hw10programoptimization
 
 import (
+	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
 )
 
+var errTooMuchUsers = errors.New("too much users")
+
+// Остальные поля кроме Email в структуре User нас не интересуют (лишние аллокации).
 type User struct {
-	ID       int
-	Name     string
-	Username string
-	Email    string
-	Phone    string
-	Password string
-	Address  string
+	// ID       int
+	// Name     string
+	// Username string
+	Email string
+	// Phone    string
+	// Password string
+	// Address  string
 }
 
 type DomainStat map[string]int
@@ -28,39 +32,46 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	return countDomains(u, domain)
 }
 
-type users [100_000]User
+type users [100_000]string
 
+// getUsers считывает построчно информацию о пользователях.
 func getUsers(r io.Reader) (result users, err error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return
+	usersCount := 0
+
+	// Считаем построчно в массив
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		// Если пользователей больше 100_000 - ошибка
+		if usersCount >= len(result) {
+			return result, errTooMuchUsers
+		}
+
+		result[usersCount] = scanner.Text()
+		usersCount++
 	}
 
-	lines := strings.Split(string(content), "\n")
-	for i, line := range lines {
-		var user User
-		if err = json.Unmarshal([]byte(line), &user); err != nil {
-			return
-		}
-		result[i] = user
-	}
 	return
 }
 
-func countDomains(u users, domain string) (DomainStat, error) {
-	result := make(DomainStat)
+// countDomains подсчитывает количество доменов 1 уровня в электронной почте пользователей.
+func countDomains(u users, domain string) (result DomainStat, err error) {
+	result = make(DomainStat)
+	var user User
 
-	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
-		if err != nil {
-			return nil, err
+	for idx := range u {
+		// Пропускаем пользователей без совпадения домена
+		if !strings.Contains(u[idx], domain) {
+			continue
 		}
 
-		if matched {
-			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
-			num++
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
+		if err = json.Unmarshal([]byte(u[idx]), &user); err != nil {
+			return
+		}
+
+		if strings.HasSuffix(user.Email, domain) {
+			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]++
 		}
 	}
+
 	return result, nil
 }
