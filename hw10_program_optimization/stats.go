@@ -13,13 +13,13 @@ var errTooMuchUsers = errors.New("too much users")
 
 // Остальные поля кроме Email в структуре User нас не интересуют (лишние аллокации).
 type User struct {
-	// ID       int
-	// Name     string
-	// Username string
-	Email string
-	// Phone    string
-	// Password string
-	// Address  string
+	ID       int    `json:"-"`
+	Name     string `json:"-"`
+	Username string `json:"-"`
+	Email    string
+	Phone    string `json:"-"`
+	Password string `json:"-"`
+	Address  string `json:"-"`
 }
 
 type DomainStat map[string]int
