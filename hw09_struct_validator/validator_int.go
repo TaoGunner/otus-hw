@@ -56,7 +56,7 @@ func validateInt(value int64, rulesList []string) error { //nolint:gocognit
 		}
 	}
 
-	// Если errs не пустой - возвращаем его как ValidationError с ошибками через Join
+	// Если errs не пустой - возвращаем его как ValidationError с ошибками через Join.
 	if len(errs) > 0 {
 		return ValidationError{Err: errors.Join(errs...)}
 	}
