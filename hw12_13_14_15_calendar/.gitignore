@@ -1,2 +1,4 @@
 logs/
 bin/
+application.log
+database.sqlite3
