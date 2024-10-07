@@ -14,13 +14,13 @@ func loggingMiddleware(next http.Handler) http.Handler {
 		// Получение IP-адреса пользователя
 		ipAddr, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
-			slog.Error("ошибка получения информации о ip пользователя", "address", r.RemoteAddr, "error", err)
+			slog.Error("Getting client ip error", "address", r.RemoteAddr, "error", err)
 		}
 
 		wrec := statusRecorder{w, 200}
 		next.ServeHTTP(&wrec, r)
 
-		slog.Info("Запрос API",
+		slog.Info("API-Request",
 			"ip", ipAddr,
 			"method", r.Method,
 			"uri", r.RequestURI,
