@@ -78,7 +78,7 @@ func main() {
 		}
 	}()
 
-	slog.Info("calendar is running...")
+	slog.Info("Calendar is running...")
 
 	if err := server.Start(ctx); err != nil {
 		slog.Error("failed to start http server", "error", err)
