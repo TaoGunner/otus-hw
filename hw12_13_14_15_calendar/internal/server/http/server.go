@@ -46,10 +46,6 @@ func NewServer(cfg config.Config, _ Application) *Server {
 
 func (s *Server) Start(ctx context.Context) error {
 	if err := s.ListenAndServe(); err != nil {
-		if errors.Is(err, http.ErrServerClosed) {
-			slog.Info("REST-server is stopped")
-		}
-
 		// Обработка ситуации, если порт REST-сервера занят
 		var opErr *net.OpError
 		var sysCallErr *os.SyscallError
@@ -58,7 +54,7 @@ func (s *Server) Start(ctx context.Context) error {
 				slog.Error("Starting HTTP server error (port is busy)")
 			}
 		} else {
-			slog.Error("Starting HTTP server error", "error", err)
+			slog.Error("HTTP server error", "error", err)
 		}
 	}
 
